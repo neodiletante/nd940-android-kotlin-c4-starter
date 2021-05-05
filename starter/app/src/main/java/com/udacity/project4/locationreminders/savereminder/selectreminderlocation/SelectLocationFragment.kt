@@ -10,6 +10,7 @@ import android.content.res.Resources
 import android.os.Bundle
 import android.util.Log
 import android.view.*
+import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
@@ -40,7 +41,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
     private lateinit var map: GoogleMap
     private val TAG = SelectLocationFragment::class.java.simpleName
     private val REQUEST_LOCATION_PERMISSION = 1
-    private lateinit var poiMarker: Marker
+    private var poiMarker: Marker? = null
 
 
     override fun onCreateView(
@@ -69,7 +70,13 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
 //        TODO: call this function after the user confirms on the selected location
        // onLocationSelected()
 
-        binding.btnSave.setOnClickListener{ onLocationSelected() }
+        binding.btnSave.setOnClickListener{
+            if (isLocationSelected()) {
+                onSaveLocation()
+            } else{
+                Toast.makeText(activity,"Please select a POI",Toast.LENGTH_SHORT).show()
+            }
+        }
         binding.btnTrick.setOnClickListener{ fakeLocationSelected() }
 
         return binding.root
@@ -82,21 +89,25 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         findNavController().navigateUp()
     }
 
-    private fun onLocationSelected() {
-        Log.d("FLUX","latidure "+poiMarker.position.latitude)
-        Log.d("FLUX","longitude "+poiMarker.position.longitude)
-        Log.d("FLUX","id "+poiMarker.id)
-        Log.d("FLUX","title "+poiMarker.title)
+    private fun isLocationSelected(): Boolean{
+        if (poiMarker == null){
+            return false
+        }
+        return true
+    }
+
+    private fun onSaveLocation() {
+        Log.d("FLUX","latitude "+poiMarker?.position?.latitude)
+        Log.d("FLUX","longitude "+poiMarker?.position?.longitude)
+        Log.d("FLUX","id "+poiMarker?.id)
+        Log.d("FLUX","title "+poiMarker?.title)
 
         _viewModel.selectedPOI.value = PointOfInterest(
-                poiMarker.position,poiMarker.id,poiMarker.title
+                poiMarker?.position,poiMarker?.id,poiMarker?.title
         )
 
-        _viewModel.reminderSelectedLocationStr.value = poiMarker.title
+        _viewModel.reminderSelectedLocationStr.value = poiMarker?.title
         findNavController().navigateUp()
-        //        TODO: When the user confirms on the selected location,
-        //         send back the selected location details to the view model
-        //         and navigate back to the previous fragment to save the reminder and add the geofence
     }
 
 
@@ -143,12 +154,13 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
 
     private fun setPoiClick(map: GoogleMap) {
         map.setOnPoiClickListener { poi ->
+            poiMarker?.remove()
             poiMarker = map.addMarker(
                     MarkerOptions()
                             .position(poi.latLng)
                             .title(poi.name)
             )
-            poiMarker.showInfoWindow()
+            poiMarker?.showInfoWindow()
         }
     }
 
@@ -176,7 +188,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
             ContextCompat.checkSelfPermission(
                     it,
                 Manifest.permission.ACCESS_FINE_LOCATION)
-        } === PackageManager.PERMISSION_GRANTED
+        } == PackageManager.PERMISSION_GRANTED
     }
 
     private fun enableMyLocation() {

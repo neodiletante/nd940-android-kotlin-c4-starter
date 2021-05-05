@@ -79,6 +79,7 @@ class SaveReminderFragment : BaseFragment() {
     override fun onStart() {
         super.onStart()
         Log.d("FLUX", "On Start")
+        checkPermissions()
        //    checkPermissionsAndStartGeofencing()
     }
 
@@ -98,13 +99,17 @@ class SaveReminderFragment : BaseFragment() {
         }
 
         binding.saveReminder.setOnClickListener {
-
-                val title = _viewModel.reminderTitle.value
-                val description = _viewModel.reminderDescription.value
-                val location = _viewModel.reminderSelectedLocationStr.value
-                val latitude = _viewModel.latitude.value
-                val longitude = _viewModel.longitude.value
-                val remider = ReminderDataItem(title, description, location, latitude, longitude)
+            val title = _viewModel.reminderTitle.value
+            val description = _viewModel.reminderDescription.value
+            val location = _viewModel.reminderSelectedLocationStr.value
+            val latitude = _viewModel.selectedPOI.value?.latLng?.latitude
+            val longitude = _viewModel.selectedPOI.value?.latLng?.longitude
+            Log.d("FLUX", "Title -> "+title)
+            Log.d("FLUX", "Description -> "+description)
+            Log.d("FLUX", "Location -> "+location)
+            Log.d("FLUX", "Latitude -> "+latitude)
+            Log.d("FLUX", "Longitude -> "+longitude)
+            val remider = ReminderDataItem(title, description, location, latitude, longitude)
             if (_viewModel.validateEnteredData(remider)) {
 
                 addGeofence()
@@ -177,7 +182,7 @@ class SaveReminderFragment : BaseFragment() {
      * Starts the permission check and Geofence process only if the Geofence associated with the
      * current hint isn't yet active.
      */
-    private fun checkPermissionsAndStartGeofencing() {
+    private fun checkPermissions() {
         if (foregroundAndBackgroundLocationPermissionApproved()) {
             checkDeviceLocationSettingsAndStartGeofence()
         } else {
@@ -257,12 +262,17 @@ class SaveReminderFragment : BaseFragment() {
         var permissionsArray = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION)
         val resultCode = when {
             runningQOrLater -> {
+                Log.d("FLUX", "Request foreground and background location permission")
+
                 permissionsArray += Manifest.permission.ACCESS_BACKGROUND_LOCATION
                 REQUEST_FOREGROUND_AND_BACKGROUND_PERMISSION_RESULT_CODE
             }
-            else -> REQUEST_FOREGROUND_ONLY_PERMISSIONS_REQUEST_CODE
+            else -> {
+                Log.d("FLUX", "Request foreground only location permission")
+                REQUEST_FOREGROUND_ONLY_PERMISSIONS_REQUEST_CODE
+            }
         }
-        Log.d(TAG, "Request foreground only location permission")
+
         activity?.let {
             ActivityCompat.requestPermissions(
                     it,
@@ -347,7 +357,7 @@ class SaveReminderFragment : BaseFragment() {
      */
     companion object {
         internal const val ACTION_GEOFENCE_EVENT =
-                "HuntMainActivity.treasureHunt.action.ACTION_GEOFENCE_EVENT"
+                "ReminderLocation.action.ACTION_GEOFENCE_EVENT"
     }
 
 

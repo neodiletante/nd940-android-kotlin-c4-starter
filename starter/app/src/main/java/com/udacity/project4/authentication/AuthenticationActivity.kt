@@ -76,7 +76,8 @@ class AuthenticationActivity : AppCompatActivity() {
                                 "${FirebaseAuth.getInstance().currentUser?.displayName}!"
                 )
 
-                val intent = Intent(this,RemindersActivity::class.java)
+                val intent = Intent(this,RemindersActivity::class.java).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+
                 startActivity(intent)
                 this.finish()
 

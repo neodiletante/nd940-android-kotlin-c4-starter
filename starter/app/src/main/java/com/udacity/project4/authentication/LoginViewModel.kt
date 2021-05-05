@@ -36,6 +36,7 @@ class LoginViewModel : ViewModel() {
         }
     }
 
+    /*
     private val _shouldNavigate = MutableLiveData<Boolean>()
     val shouldNavigate: LiveData<Boolean>
         get() = _shouldNavigate
@@ -47,6 +48,8 @@ class LoginViewModel : ViewModel() {
     fun initNavigating() {
         _shouldNavigate.value = true
     }
+
+     */
 
 
 }
