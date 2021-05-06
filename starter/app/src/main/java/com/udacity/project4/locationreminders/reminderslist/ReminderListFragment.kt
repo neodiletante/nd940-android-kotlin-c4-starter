@@ -160,37 +160,39 @@ class ReminderListFragment : BaseFragment() {
             Log.d("FLUX","description " + reminder.description)
             Log.d("FLUX","lat " + reminder.latitude)
             Log.d("FLUX","lon " + reminder.longitude)
-            val geofence = Geofence.Builder()
-                    .setRequestId(reminder.id)
-                    .setCircularRegion(reminder.latitude!!,
-                            reminder.longitude!!,
-                            GeofencingConstants.GEOFENCE_RADIUS_IN_METERS
-                    )
-                    .setExpirationDuration(GeofencingConstants.GEOFENCE_EXPIRATION_IN_MILLISECONDS)
-                    .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
-                    .build()
+            if (reminder.latitude != null && reminder.longitude != null) {
+                val geofence = Geofence.Builder()
+                        .setRequestId(reminder.id)
+                        .setCircularRegion(reminder.latitude!!,
+                                reminder.longitude!!,
+                                GeofencingConstants.GEOFENCE_RADIUS_IN_METERS
+                        )
+                        .setExpirationDuration(GeofencingConstants.GEOFENCE_EXPIRATION_IN_MILLISECONDS)
+                        .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
+                        .build()
 
-            val geofencingRequest = GeofencingRequest.Builder()
-                    .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
-                    .addGeofence(geofence)
-                    .build()
+                val geofencingRequest = GeofencingRequest.Builder()
+                        .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
+                        .addGeofence(geofence)
+                        .build()
 
 
 
-            geofencingClient.addGeofences(geofencingRequest, geofencePendingIntent)?.run {
-                addOnSuccessListener {
-                    //  Toast.makeText(activity, R.string.geofence_entered,
-                    //          Toast.LENGTH_SHORT)
-                    //          .show()
-                    Log.d("FLUX","Add Geofence " + geofence.requestId)
-                    Log.e("Add Geofence", geofence.requestId)
-                    //viewModel.geofenceActivated()
-                }
-                addOnFailureListener {
-                    //Toast.makeText(activity, R.string.geofences_not_added,
-                    //        Toast.LENGTH_SHORT).show()
-                    if ((it.message != null)) {
-                        Log.w("FLUX", it.localizedMessage)
+                geofencingClient.addGeofences(geofencingRequest, geofencePendingIntent)?.run {
+                    addOnSuccessListener {
+                        //  Toast.makeText(activity, R.string.geofence_entered,
+                        //          Toast.LENGTH_SHORT)
+                        //          .show()
+                        Log.d("FLUX", "Add Geofence " + geofence.requestId)
+                        Log.e("Add Geofence", geofence.requestId)
+                        //viewModel.geofenceActivated()
+                    }
+                    addOnFailureListener {
+                        //Toast.makeText(activity, R.string.geofences_not_added,
+                        //        Toast.LENGTH_SHORT).show()
+                        if ((it.message != null)) {
+                            Log.w("FLUX", it.localizedMessage)
+                        }
                     }
                 }
             }
