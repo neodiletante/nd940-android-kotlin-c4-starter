@@ -7,7 +7,9 @@ import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.content.res.Resources
+import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import android.view.*
 import android.widget.Toast
@@ -24,6 +26,7 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.google.android.material.snackbar.Snackbar
+import com.udacity.project4.BuildConfig
 import com.udacity.project4.R
 import com.udacity.project4.base.BaseFragment
 import com.udacity.project4.base.NavigationCommand
@@ -63,12 +66,6 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         mapFragment?.getMapAsync(this)
 
 //        TODO: zoom to the user location after taking his permission
-//        TODO: add style to the map
-//        TODO: put a marker to location that the user selected
-
-
-//        TODO: call this function after the user confirms on the selected location
-       // onLocationSelected()
 
         binding.btnSave.setOnClickListener{
             if (isLocationSelected()) {
@@ -162,6 +159,17 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
             )
             poiMarker?.showInfoWindow()
         }
+
+        map.setOnMapLongClickListener { marker ->
+            poiMarker?.remove()
+            poiMarker = map.addMarker(
+                    MarkerOptions()
+                            .position(LatLng(marker.latitude,marker.longitude))
+                            .title("Custom Marker")
+            )
+            poiMarker?.showInfoWindow()
+        }
+
     }
 
     private fun setMapStyle(map: GoogleMap) {
@@ -196,13 +204,10 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
             map.setMyLocationEnabled(true)
         }
         else {
-            activity?.let {
-                ActivityCompat.requestPermissions(
-                        it,
-                        arrayOf<String>(Manifest.permission.ACCESS_FINE_LOCATION),
-                        REQUEST_LOCATION_PERMISSION
-                )
-            }
+            requestPermissions(
+                arrayOf<String>(Manifest.permission.ACCESS_FINE_LOCATION),
+                REQUEST_LOCATION_PERMISSION
+            )
         }
     }
 
@@ -210,16 +215,28 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
             requestCode: Int,
             permissions: Array<String>,
             grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        Log.d("FLUX", "onRequestPermissionResult")
+
         // Check if location permissions are granted and if so enable the
         // location data layer.
         if (requestCode == REQUEST_LOCATION_PERMISSION) {
             if (grantResults.size > 0 && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
                 enableMyLocation()
+            }else{
+                Snackbar.make(
+                        binding.root,
+                        R.string.permission_denied_explanation,
+                        Snackbar.LENGTH_LONG
+                )
+                        .setAction(R.string.settings) {
+                            startActivity(Intent().apply {
+                                action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+                                data = Uri.fromParts("package", BuildConfig.APPLICATION_ID, null)
+                                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                            })
+                        }.show()
             }
         }
-    }
-
-    fun onSave(){
-
     }
 }

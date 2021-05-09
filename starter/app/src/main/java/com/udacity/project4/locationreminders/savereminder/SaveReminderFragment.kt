@@ -141,6 +141,8 @@ class SaveReminderFragment : BaseFragment() {
         }
     }
 
+
+
     /*
      * In all cases, we need to have the location permission.  On Android 10+ (Q) we need to have
      * the background permission as well.
@@ -150,19 +152,23 @@ class SaveReminderFragment : BaseFragment() {
             permissions: Array<String>,
             grantResults: IntArray
     ) {
-        Log.d(TAG, "onRequestPermissionResult")
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        Log.d("FLUX", "onRequonRequestestPermissionResult")
 
         if (
                 grantResults.isEmpty() ||
                 grantResults[LOCATION_PERMISSION_INDEX] == PackageManager.PERMISSION_DENIED ||
                 (requestCode == REQUEST_FOREGROUND_AND_BACKGROUND_PERMISSION_RESULT_CODE &&
                         grantResults[BACKGROUND_LOCATION_PERMISSION_INDEX] ==
+                        PackageManager.PERMISSION_DENIED) ||
+                (requestCode == REQUEST_FOREGROUND_ONLY_PERMISSIONS_REQUEST_CODE &&
+                        grantResults[BACKGROUND_LOCATION_PERMISSION_INDEX] ==
                         PackageManager.PERMISSION_DENIED))
         {
             Snackbar.make(
                     binding.root,
                     R.string.permission_denied_explanation,
-                    Snackbar.LENGTH_INDEFINITE
+                    Snackbar.LENGTH_LONG
             )
                     .setAction(R.string.settings) {
                         startActivity(Intent().apply {
@@ -273,13 +279,10 @@ class SaveReminderFragment : BaseFragment() {
             }
         }
 
-        activity?.let {
-            ActivityCompat.requestPermissions(
-                    it,
+            requestPermissions(
                 permissionsArray,
                 resultCode
         )
-        }
     }
 
     /*
